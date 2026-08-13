@@ -1,0 +1,90 @@
+/* src/components/transactions/TransactionItem/TransactionItem.module.css */
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background: white;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+}
+
+.item:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.icon {
+  font-size: 1.5rem;
+  width: 40px;
+  text-align: center;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.description {
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  display: flex;
+  gap: var(--spacing-md);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.category {
+  background: var(--gray-100);
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+}
+
+.amount {
+  font-weight: 600;
+  font-size: 1.05rem;
+  white-space: nowrap;
+  min-width: 100px;
+  text-align: right;
+}
+
+.income {
+  color: var(--success);
+}
+
+.expense {
+  color: var(--danger);
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+@media (max-width: 640px) {
+  .item {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+  }
+
+  .icon {
+    font-size: 1.2rem;
+    width: 32px;
+  }
+
+  .amount {
+    font-size: 0.95rem;
+    min-width: 80px;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

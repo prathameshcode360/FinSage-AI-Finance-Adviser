@@ -1,0 +1,55 @@
+/* src/pages/AIAssistant/AIAssistant.module.css */
+.aiAssistant {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.chatContainer {
+  margin-bottom: var(--spacing-lg);
+}
+
+.disclaimer {
+  padding: var(--spacing-md);
+  background: var(--gray-100);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--warning);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.disclaimer strong {
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .disclaimer {
+    font-size: 0.85rem;
+    padding: var(--spacing-sm);
+  }
+}

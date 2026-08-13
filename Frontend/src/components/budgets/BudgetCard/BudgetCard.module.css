@@ -1,0 +1,126 @@
+/* src/components/budgets/BudgetCard/BudgetCard.module.css */
+.card {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-lg);
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.category {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.amounts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.amountItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.amountLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.amountValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.progressSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.progressInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.utilization {
+  color: var(--text-secondary);
+}
+
+.status {
+  padding: 0.1rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.healthy {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.moderate {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.near-limit {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.over-budget {
+  background: var(--danger-light);
+  color: var(--danger);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: var(--spacing-md);
+  }
+
+  .amounts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .amountItem:last-child {
+    grid-column: 1 / -1;
+  }
+}

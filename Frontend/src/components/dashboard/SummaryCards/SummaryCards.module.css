@@ -1,0 +1,109 @@
+/* src/components/dashboard/SummaryCards/SummaryCards.module.css */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.card {
+  background: white;
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.title {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.primary .value {
+  color: var(--primary-600);
+}
+
+.success .value {
+  color: var(--success);
+}
+
+.danger .value {
+  color: var(--danger);
+}
+
+.info .value {
+  color: var(--info);
+}
+
+/* Skeleton loading */
+.skeleton {
+  min-height: 100px;
+}
+
+.skeletonTitle {
+  width: 60%;
+  height: 14px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  margin-bottom: var(--spacing-sm);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeletonValue {
+  width: 80%;
+  height: 28px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+  }
+
+  .card {
+    padding: var(--spacing-md);
+  }
+
+  .value {
+    font-size: 1.25rem;
+  }
+
+  .icon {
+    font-size: 1.2rem;
+  }
+}

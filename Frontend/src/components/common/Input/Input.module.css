@@ -1,0 +1,50 @@
+/* src/components/common/Input/Input.module.css */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.input {
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast);
+  background: white;
+  color: var(--text-primary);
+  width: 100%;
+  min-height: 44px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.input:disabled {
+  background: var(--gray-100);
+  cursor: not-allowed;
+}
+
+.input.error {
+  border-color: var(--danger);
+}
+
+.input.error:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px var(--danger-light);
+}
+
+.errorMessage {
+  font-size: 0.85rem;
+  color: var(--danger);
+}

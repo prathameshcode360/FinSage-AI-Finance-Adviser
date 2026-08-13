@@ -1,0 +1,96 @@
+/* src/components/ai/ChatMessage/ChatMessage.module.css */
+.message {
+  display: flex;
+  gap: var(--spacing-sm);
+  max-width: 85%;
+  animation: slideIn 0.3s ease;
+}
+
+.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.ai {
+  align-self: flex-start;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  background: var(--gray-100);
+}
+
+.user .avatar {
+  background: var(--primary-100);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.bubble {
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius-lg);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  word-wrap: break-word;
+}
+
+.user .bubble {
+  background: var(--primary-500);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.ai .bubble {
+  background: var(--gray-100);
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  padding: 0 var(--spacing-xs);
+}
+
+.user .timestamp {
+  text-align: right;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .message {
+    max-width: 92%;
+  }
+
+  .bubble {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+  }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+}

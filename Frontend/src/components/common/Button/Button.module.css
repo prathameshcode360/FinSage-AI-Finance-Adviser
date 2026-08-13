@@ -1,0 +1,124 @@
+/* src/components/common/Button/Button.module.css */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  min-height: 44px;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+/* Variants */
+.primary {
+  background: var(--primary-500);
+  color: white;
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--primary-600);
+}
+
+.secondary {
+  background: var(--gray-200);
+  color: var(--text-primary);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--gray-300);
+}
+
+.success {
+  background: var(--success);
+  color: white;
+}
+
+.success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.danger {
+  background: var(--danger);
+  color: white;
+}
+
+.danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.outline {
+  background: transparent;
+  border-color: var(--gray-300);
+  color: var(--text-primary);
+}
+
+.outline:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--gray-100);
+}
+
+/* Sizes */
+.small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  min-height: 36px;
+}
+
+.medium {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  min-height: 44px;
+}
+
+.large {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.05rem;
+  min-height: 52px;
+}
+
+/* States */
+.fullWidth {
+  width: 100%;
+}
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  font-size: 1.2rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
