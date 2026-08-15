@@ -21,9 +21,15 @@ router.post(
     body("type")
       .isIn(["income", "expense"])
       .withMessage("Invalid transaction type"),
-    body("amount").isNumeric().withMessage("Amount must be a number"),
+
+    body("amount")
+      .isFloat({ gt: 0 })
+      .withMessage("Amount must be greater than 0"),
+
     body("category").notEmpty().withMessage("Category is required"),
+
     body("description").optional().trim(),
+
     body("date").optional().isDate().withMessage("Invalid date"),
   ],
   createTransaction,
@@ -36,12 +42,16 @@ router.put(
       .optional()
       .isIn(["income", "expense"])
       .withMessage("Invalid transaction type"),
+
     body("amount")
       .optional()
-      .isNumeric()
-      .withMessage("Amount must be a number"),
+      .isFloat({ gt: 0 })
+      .withMessage("Amount must be greater than 0"),
+
     body("category").optional().notEmpty().withMessage("Category is required"),
+
     body("description").optional().trim(),
+
     body("date").optional().isDate().withMessage("Invalid date"),
   ],
   updateTransaction,

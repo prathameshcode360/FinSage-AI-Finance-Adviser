@@ -11,6 +11,8 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { formatCurrency } from "../../../utils/formatCurrency.js";
+import styles from "./IncomeExpenseChart.module.css";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -26,32 +28,12 @@ const IncomeExpenseChart = ({
   title = "Income vs Expenses",
 }) => {
   if (loading) {
-    return (
-      <div className="chart-skeleton" style={{ height: "250px" }}>
-        Loading...
-      </div>
-    );
+    return <div className={styles.skeletonContainer}>Loading...</div>;
   }
 
   if (!data || data.length === 0) {
-    return (
-      <div
-        style={{
-          height: "250px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--text-secondary)",
-        }}>
-        No data available
-      </div>
-    );
+    return <div className={styles.emptyState}>No data available</div>;
   }
-
-  const labels = data.map((item) => {
-    const date = new Date(item.date);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  });
 
   // Group by date for income and expense
   const grouped = data.reduce((acc, item) => {
@@ -59,14 +41,19 @@ const IncomeExpenseChart = ({
       month: "short",
       day: "numeric",
     });
+
     if (!acc[date]) {
       acc[date] = { income: 0, expense: 0 };
     }
+
+    const amount = parseFloat(item.total_amount);
+
     if (item.type === "income") {
-      acc[date].income += item.total_amount;
+      acc[date].income += amount;
     } else {
-      acc[date].expense += item.total_amount;
+      acc[date].expense += amount;
     }
+
     return acc;
   }, {});
 
@@ -111,12 +98,15 @@ const IncomeExpenseChart = ({
         callbacks: {
           label: function (context) {
             let label = context.dataset.label || "";
+
             if (label) {
               label += ": ";
             }
+
             if (context.parsed.y !== null) {
               label += formatCurrency(context.parsed.y);
             }
+
             return label;
           },
         },
@@ -135,7 +125,7 @@ const IncomeExpenseChart = ({
   };
 
   return (
-    <div style={{ height: "250px" }}>
+    <div className={styles.chartContainer}>
       <Bar data={chartData} options={options} />
     </div>
   );

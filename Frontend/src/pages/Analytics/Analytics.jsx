@@ -13,9 +13,14 @@ const Analytics = () => {
   const [monthlyTrend, setMonthlyTrend] = useState([]);
   const [categoryBreakdown, setCategoryBreakdown] = useState([]);
   const [incomeExpenseData, setIncomeExpenseData] = useState([]);
+
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0",
+    )}`;
   });
 
   useEffect(() => {
@@ -25,22 +30,27 @@ const Analytics = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const [year, month] = selectedMonth.split("-").map(Number);
-      const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-      const endDate = new Date(year, month, 0).toISOString().split("T")[0];
 
-      const [summaryData, trendData, categoryData, trendDetailData] =
-        await Promise.all([
-          analyticsService.getSummary(startDate, endDate),
-          analyticsService.getMonthlyTrend(year, month),
-          analyticsService.getCategoryBreakdown(startDate, endDate),
-          analyticsService.getMonthlyTrend(year, month),
-        ]);
+      const [year, month] = selectedMonth.split("-").map(Number);
+
+      const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+
+      const endDate = `${year}-${String(month).padStart(2, "0")}-${String(
+        new Date(year, month, 0).getDate(),
+      ).padStart(2, "0")}`;
+
+      const [summaryData, trendData, categoryData] = await Promise.all([
+        analyticsService.getSummary(startDate, endDate),
+        analyticsService.getMonthlyTrend(year, month),
+        analyticsService.getCategoryBreakdown(startDate, endDate),
+      ]);
 
       setSummary(summaryData.summary);
       setMonthlyTrend(trendData);
       setCategoryBreakdown(categoryData);
-      setIncomeExpenseData(trendDetailData);
+
+      // Monthly trend data is also used for the Income vs Expenses chart.
+      setIncomeExpenseData(trendData);
     } catch (error) {
       console.error("Error fetching analytics:", error);
     } finally {
@@ -55,15 +65,22 @@ const Analytics = () => {
   const getMonthOptions = () => {
     const options = [];
     const now = new Date();
+
     for (let i = 0; i < 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+      const value = `${date.getFullYear()}-${String(
+        date.getMonth() + 1,
+      ).padStart(2, "0")}`;
+
       const label = date.toLocaleDateString("en-US", {
         month: "long",
         year: "numeric",
       });
+
       options.push({ value, label });
     }
+
     return options;
   };
 
@@ -74,6 +91,7 @@ const Analytics = () => {
           <h1 className={styles.title}>Analytics</h1>
           <p className={styles.subtitle}>Deep dive into your financial data</p>
         </div>
+
         <select
           value={selectedMonth}
           onChange={handleMonthChange}
@@ -101,18 +119,21 @@ const Analytics = () => {
                 {formatCurrency(summary?.totalIncome || 0)}
               </span>
             </div>
+
             <div className={styles.summaryCard}>
               <span className={styles.summaryLabel}>Total Expenses</span>
               <span className={`${styles.summaryValue} ${styles.expense}`}>
                 {formatCurrency(summary?.totalExpenses || 0)}
               </span>
             </div>
+
             <div className={styles.summaryCard}>
               <span className={styles.summaryLabel}>Balance</span>
               <span className={styles.summaryValue}>
                 {formatCurrency(summary?.balance || 0)}
               </span>
             </div>
+
             <div className={styles.summaryCard}>
               <span className={styles.summaryLabel}>Transactions</span>
               <span className={styles.summaryValue}>
@@ -126,10 +147,12 @@ const Analytics = () => {
               <h3 className={styles.chartTitle}>Monthly Trend</h3>
               <MonthlyTrendChart data={monthlyTrend} loading={loading} />
             </div>
+
             <div className={styles.chartCard}>
               <h3 className={styles.chartTitle}>Income vs Expenses</h3>
               <IncomeExpenseChart data={incomeExpenseData} loading={loading} />
             </div>
+
             <div className={styles.chartCard}>
               <h3 className={styles.chartTitle}>Category Breakdown</h3>
               <CategoryBreakdownChart

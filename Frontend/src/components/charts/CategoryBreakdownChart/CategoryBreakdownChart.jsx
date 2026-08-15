@@ -3,6 +3,7 @@ import React from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Pie } from "react-chartjs-2";
 import { formatCurrency } from "../../../utils/formatCurrency.js";
+import styles from "./CategoryBreakdownChart.module.css";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -12,26 +13,11 @@ const CategoryBreakdownChart = ({
   title = "Category Breakdown",
 }) => {
   if (loading) {
-    return (
-      <div className="chart-skeleton" style={{ height: "300px" }}>
-        Loading...
-      </div>
-    );
+    return <div className={styles.skeletonContainer}>Loading...</div>;
   }
 
   if (!data || data.length === 0) {
-    return (
-      <div
-        style={{
-          height: "300px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--text-secondary)",
-        }}>
-        No category data available
-      </div>
-    );
+    return <div className={styles.emptyState}>No category data available</div>;
   }
 
   const colors = [
@@ -88,7 +74,7 @@ const CategoryBreakdownChart = ({
   };
 
   return (
-    <div style={{ height: "300px" }}>
+    <div className={styles.chartContainer}>
       <Pie data={chartData} options={options} />
     </div>
   );

@@ -8,16 +8,19 @@ exports.getSummary = async (req, res, next) => {
 
     // Default to current month if not specified
     const now = new Date();
+
     const start =
       startDate ||
-      new Date(now.getFullYear(), now.getMonth(), 1)
-        .toISOString()
-        .split("T")[0];
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
     const end =
       endDate ||
-      new Date(now.getFullYear(), now.getMonth() + 1, 0)
-        .toISOString()
-        .split("T")[0];
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+        2,
+        "0",
+      )}-${String(
+        new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
+      ).padStart(2, "0")}`;
 
     const summary = await Transaction.getSummary(req.user.id, start, end);
 
@@ -63,22 +66,26 @@ exports.getCategoryBreakdown = async (req, res, next) => {
     const { startDate, endDate } = req.query;
 
     const now = new Date();
+
     const start =
       startDate ||
-      new Date(now.getFullYear(), now.getMonth(), 1)
-        .toISOString()
-        .split("T")[0];
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+
     const end =
       endDate ||
-      new Date(now.getFullYear(), now.getMonth() + 1, 0)
-        .toISOString()
-        .split("T")[0];
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+        2,
+        "0",
+      )}-${String(
+        new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
+      ).padStart(2, "0")}`;
 
     const data = await Transaction.getCategoryBreakdown(
       req.user.id,
       start,
       end,
     );
+
     res.json({ data });
   } catch (error) {
     next(error);

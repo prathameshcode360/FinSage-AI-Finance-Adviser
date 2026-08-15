@@ -29,7 +29,8 @@ const SpendingOverview = ({ data, loading }) => {
     );
   }
 
-  const total = data.reduce((sum, item) => sum + item.amount, 0);
+  const total = data.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+
   const colors = [
     "#0ea5e9",
     "#10b981",
@@ -42,17 +43,20 @@ const SpendingOverview = ({ data, loading }) => {
   return (
     <div className={styles.container}>
       <h3 className={styles.title}>Spending Overview</h3>
+
       <div className={styles.bars}>
         {data.slice(0, 6).map((item, index) => {
-          const percentage = total > 0 ? (item.amount / total) * 100 : 0;
+          const amount = parseFloat(item.amount);
+          const percentage = total > 0 ? (amount / total) * 100 : 0;
+
           return (
             <div key={item.category} className={styles.barGroup}>
               <div className={styles.barLabel}>
                 <span className={styles.categoryName}>{item.category}</span>
-                <span className={styles.amount}>
-                  {formatCurrency(item.amount)}
-                </span>
+
+                <span className={styles.amount}>{formatCurrency(amount)}</span>
               </div>
+
               <div className={styles.barTrack}>
                 <div
                   className={styles.barFill}
@@ -62,6 +66,7 @@ const SpendingOverview = ({ data, loading }) => {
                   }}
                 />
               </div>
+
               <div className={styles.percentage}>{percentage.toFixed(0)}%</div>
             </div>
           );

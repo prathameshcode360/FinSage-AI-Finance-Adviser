@@ -1,4 +1,3 @@
-// src/services/ai.service.js
 const { aiConfig, USE_MOCK_AI } = require("../config/ai");
 const { GoogleGenAI } = require("@google/genai");
 
@@ -25,7 +24,6 @@ class AIService {
         config: {
           systemInstruction: this.buildSystemPrompt(financialContext),
           maxOutputTokens: aiConfig.maxTokens,
-          temperature: aiConfig.temperature,
         },
       });
 
@@ -52,16 +50,22 @@ class AIService {
           systemInstruction:
             "You are FinSage, a personal finance adviser. Provide a concise, actionable insight based on the user's financial data. Focus on one key observation and give a specific recommendation.",
           maxOutputTokens: 200,
-          temperature: 0.7,
         },
       });
 
       const content = response.text;
 
+      const sentences = content
+        .split(".")
+        .map((sentence) => sentence.trim())
+        .filter(Boolean);
+
       return {
-        insight: content.split(".")[0] + ".",
+        insight: sentences[0]
+          ? `${sentences[0]}.`
+          : "Review your recent spending patterns.",
         recommendation:
-          content.split(".")[1] ||
+          sentences[1] ||
           "Track your spending to identify areas for improvement.",
         type: "general",
       };
@@ -90,12 +94,12 @@ Category breakdown: ${JSON.stringify(financialContext.categoryBreakdown || [])}
 Budgets: ${JSON.stringify(financialContext.budgets || [])}
 
 Important guidelines:
-1. Base your advice on the user's actual financial data
-2. Be practical and specific
-3. Keep responses concise and actionable
-4. Include specific numbers when referencing the user's finances
-5. Don't provide licensed financial advice for investments or major decisions
-6. Include a disclaimer for any significant financial decisions
+1. Base your advice on the user's actual financial data.
+2. Be practical and specific.
+3. Keep responses concise and actionable.
+4. Include specific numbers when referencing the user's finances.
+5. Don't provide licensed financial advice for investments or major decisions.
+6. Include a disclaimer for any significant financial decisions.
 
 Format: Provide clear, structured responses with actionable insights.`;
   }
@@ -186,7 +190,9 @@ I recommend focusing on tracking your expenses and setting clear budget goals. Y
       );
 
       if (overBudget) {
-        insight = `Your ${overBudget.category} spending ($${overBudget.spent.toFixed(
+        insight = `Your ${
+          overBudget.category
+        } spending ($${overBudget.spent.toFixed(
           2,
         )}) has exceeded your budget of $${overBudget.budgetAmount.toFixed(
           2,
@@ -202,9 +208,9 @@ I recommend focusing on tracking your expenses and setting clear budget goals. Y
       }
 
       if (nearBudget) {
-        insight = `Your ${nearBudget.category} spending is at ${nearBudget.utilization.toFixed(
-          0,
-        )}% of your budget.`;
+        insight = `Your ${
+          nearBudget.category
+        } spending is at ${nearBudget.utilization.toFixed(0)}% of your budget.`;
 
         recommendation = `Monitor your ${nearBudget.category} spending closely this month to stay within budget.`;
 

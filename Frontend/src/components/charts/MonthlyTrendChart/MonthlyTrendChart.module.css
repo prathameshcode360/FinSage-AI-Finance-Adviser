@@ -1,0 +1,26 @@
+.chartContainer {
+  height: 300px;
+  width: 100%;
+}
+
+.skeletonContainer {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.emptyState {
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.loadingText {
+  color: var(--text-secondary);
+}

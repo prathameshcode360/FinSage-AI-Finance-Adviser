@@ -45,11 +45,13 @@ class Budget {
       values.push(data.category);
       paramCount++;
     }
+
     if (data.amount) {
       fields.push(`amount = $${paramCount}`);
       values.push(data.amount);
       paramCount++;
     }
+
     if (data.month) {
       fields.push(`month = $${paramCount}`);
       values.push(data.month);
@@ -66,6 +68,7 @@ class Budget {
       WHERE id = $${paramCount} AND user_id = $${paramCount + 1}
       RETURNING *
     `;
+
     values.push(id, userId);
 
     const result = await pool.query(query, values);
@@ -103,14 +106,17 @@ class Budget {
         AND b.month = $2
       ORDER BY b.category
     `;
+
     const startDate = `${month}-01`;
-    const endDate = new Date(
-      new Date(month).getFullYear(),
-      new Date(month).getMonth() + 1,
-      0,
-    )
-      .toISOString()
-      .split("T")[0];
+
+    // Calculate the actual last day of the month
+    // without converting the local date to UTC.
+    const [year, monthNumber] = month.split("-").map(Number);
+    const lastDay = new Date(year, monthNumber, 0).getDate();
+
+    const endDate = `${year}-${String(monthNumber).padStart(2, "0")}-${String(
+      lastDay,
+    ).padStart(2, "0")}`;
 
     const result = await pool.query(query, [userId, startDate, endDate]);
     return result.rows;

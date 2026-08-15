@@ -28,12 +28,16 @@ const Dashboard = () => {
 
         // Get current month date range
         const now = new Date();
-        const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-          .toISOString()
-          .split("T")[0];
-        const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-          .toISOString()
-          .split("T")[0];
+
+        const startDate = `${now.getFullYear()}-${String(
+          now.getMonth() + 1,
+        ).padStart(2, "0")}-01`;
+
+        const endDate = `${now.getFullYear()}-${String(
+          now.getMonth() + 1,
+        ).padStart(2, "0")}-${String(
+          new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(),
+        ).padStart(2, "0")}`;
 
         // Fetch all data in parallel
         const [summaryData, transactionsData, trendData, categoryData] =
@@ -97,14 +101,17 @@ const Dashboard = () => {
             <h3 className={styles.cardTitle}>Monthly Trend</h3>
             <MonthlyTrendChart data={monthlyTrend} loading={loading} />
           </div>
+
           <div className={styles.chartCard}>
             <RecentTransactions transactions={transactions} loading={loading} />
           </div>
         </div>
+
         <div className={styles.gridRight}>
           <div className={styles.chartCard}>
             <SpendingOverview data={categoryBreakdown} loading={loading} />
           </div>
+
           <div className={styles.chartCard}>
             <AIInsight insight={insight} loading={insightLoading} />
           </div>

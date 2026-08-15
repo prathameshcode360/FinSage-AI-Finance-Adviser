@@ -82,21 +82,25 @@ class Transaction {
       values.push(data.type);
       paramCount++;
     }
+
     if (data.amount) {
       fields.push(`amount = $${paramCount}`);
       values.push(data.amount);
       paramCount++;
     }
+
     if (data.category) {
       fields.push(`category = $${paramCount}`);
       values.push(data.category);
       paramCount++;
     }
+
     if (data.description !== undefined) {
       fields.push(`description = $${paramCount}`);
       values.push(data.description);
       paramCount++;
     }
+
     if (data.date) {
       fields.push(`date = $${paramCount}`);
       values.push(data.date);
@@ -113,6 +117,7 @@ class Transaction {
       WHERE id = $${paramCount} AND user_id = $${paramCount + 1}
       RETURNING *
     `;
+
     values.push(id, userId);
 
     const result = await pool.query(query, values);
@@ -137,13 +142,19 @@ class Transaction {
         AND date >= $2
         AND date <= $3
     `;
+
     const result = await pool.query(query, [userId, startDate, endDate]);
     return result.rows[0];
   }
 
   static async getMonthlyTrend(userId, year, month) {
     const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
-    const endDate = `${year}-${String(month).padStart(2, "0")}-31`;
+
+    // Calculate the actual last day of the requested month
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${year}-${String(month).padStart(2, "0")}-${String(
+      lastDay,
+    ).padStart(2, "0")}`;
 
     const query = `
       SELECT 
@@ -156,6 +167,7 @@ class Transaction {
       GROUP BY date, type
       ORDER BY date
     `;
+
     const result = await pool.query(query, [userId, startDate, endDate]);
     return result.rows;
   }
@@ -173,6 +185,7 @@ class Transaction {
       GROUP BY category, type
       ORDER BY total_amount DESC
     `;
+
     const result = await pool.query(query, [userId, startDate, endDate]);
     return result.rows;
   }

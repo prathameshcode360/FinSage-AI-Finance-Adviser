@@ -19,9 +19,13 @@ router.post(
   "/",
   [
     body("category").notEmpty().withMessage("Category is required"),
-    body("amount").isNumeric().withMessage("Amount must be a number"),
+
+    body("amount")
+      .isFloat({ gt: 0 })
+      .withMessage("Amount must be greater than 0"),
+
     body("month")
-      .matches(/^\d{4}-\d{2}$/)
+      .matches(/^\d{4}-(0[1-9]|1[0-2])$/)
       .withMessage("Invalid month format (YYYY-MM)"),
   ],
   createBudget,
@@ -31,13 +35,15 @@ router.put(
   "/:id",
   [
     body("category").optional().notEmpty().withMessage("Category is required"),
+
     body("amount")
       .optional()
-      .isNumeric()
-      .withMessage("Amount must be a number"),
+      .isFloat({ gt: 0 })
+      .withMessage("Amount must be greater than 0"),
+
     body("month")
       .optional()
-      .matches(/^\d{4}-\d{2}$/)
+      .matches(/^\d{4}-(0[1-9]|1[0-2])$/)
       .withMessage("Invalid month format (YYYY-MM)"),
   ],
   updateBudget,

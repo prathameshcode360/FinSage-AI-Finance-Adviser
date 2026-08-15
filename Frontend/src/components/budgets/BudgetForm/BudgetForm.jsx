@@ -9,10 +9,12 @@ import styles from "./BudgetForm.module.css";
 const BudgetForm = ({ budget, month, onSave, onCancel }) => {
   const isEditing = !!budget;
 
+  const initialMonth = budget?.month ? String(budget.month).slice(0, 7) : month;
+
   const [formData, setFormData] = useState({
     category: budget?.category || "",
     amount: budget?.amount || "",
-    month: budget?.month || month,
+    month: initialMonth,
   });
 
   const [errors, setErrors] = useState({});
@@ -24,7 +26,9 @@ const BudgetForm = ({ budget, month, onSave, onCancel }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData({ ...formData, [name]: value });
+
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
@@ -32,27 +36,33 @@ const BudgetForm = ({ budget, month, onSave, onCancel }) => {
 
   const validateForm = () => {
     const newErrors = {};
+
     if (!formData.category) {
       newErrors.category = "Category is required";
     }
+
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       newErrors.amount = "Amount must be greater than 0";
     }
+
     if (!formData.month) {
       newErrors.month = "Month is required";
     }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!validateForm()) return;
 
     const data = {
       ...formData,
       amount: parseFloat(formData.amount),
     };
+
     onSave(data);
   };
 
@@ -101,6 +111,7 @@ const BudgetForm = ({ budget, month, onSave, onCancel }) => {
         <Button type="submit" variant="primary">
           {isEditing ? "Update" : "Create"} Budget
         </Button>
+
         <Button type="button" variant="secondary" onClick={onCancel}>
           Cancel
         </Button>
