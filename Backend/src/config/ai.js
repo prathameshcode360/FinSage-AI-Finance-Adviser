@@ -1,16 +1,15 @@
 // src/config/ai.js
 require("dotenv").config();
 
-// Simple AI configuration
 const aiConfig = {
-  provider: process.env.AI_PROVIDER || "openai",
-  model: process.env.AI_MODEL || "gpt-3.5-turbo",
+  provider: process.env.AI_PROVIDER || "gemini",
+  model: process.env.AI_MODEL || "gemini-2.5-flash",
   apiKey: process.env.AI_API_KEY,
   maxTokens: 500,
   temperature: 0.7,
 };
 
-// For demonstration without an actual API key, we'll use mock responses
+// Use mock AI only when API key is not available
 const USE_MOCK_AI = !process.env.AI_API_KEY;
 
 module.exports = {
