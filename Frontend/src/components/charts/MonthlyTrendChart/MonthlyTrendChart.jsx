@@ -12,7 +12,7 @@ import {
   Filler,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { formatCurrency } from "../../../../utils/formatCurrency";
+import { formatCurrency } from "../../../utils/formatCurrency.js";
 
 ChartJS.register(
   CategoryScale,

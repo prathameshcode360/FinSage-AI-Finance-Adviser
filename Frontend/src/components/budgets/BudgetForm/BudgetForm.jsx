@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Input from "../../common/Input/Input";
 import Select from "../../common/Select/Select";
 import Button from "../../common/Button/Button";
-import { getAllCategories } from "../../../../constants/categories";
+import { getAllCategories } from "../../../constants/categories.js";
 import styles from "./BudgetForm.module.css";
 
 const BudgetForm = ({ budget, month, onSave, onCancel }) => {

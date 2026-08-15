@@ -1,7 +1,7 @@
 // src/components/budgets/BudgetCard/BudgetCard.jsx
 import React from "react";
-import { formatCurrency } from "../../../../utils/formatCurrency";
-import { getStatusColor, getStatusLabel } from "../../../../utils/calculations";
+import { formatCurrency } from "../../../utils/formatCurrency.js";
+import { getStatusColor, getStatusLabel } from "../../../utils/calculations.js";
 import Button from "../../common/Button/Button";
 import styles from "./BudgetCard.module.css";
 

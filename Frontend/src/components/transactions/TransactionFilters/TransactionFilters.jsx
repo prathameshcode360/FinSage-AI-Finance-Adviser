@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import Input from "../../common/Input/Input";
 import Select from "../../common/Select/Select";
 import Button from "../../common/Button/Button";
-import { TRANSACTION_TYPES } from "../../../../constants/transactionTypes";
-import { getAllCategories } from "../../../../constants/categories";
+import { TRANSACTION_TYPES } from "../../../constants/transactionTypes";
+import { getAllCategories } from "../../../constants/categories.js";
 import styles from "./TransactionFilters.module.css";
 
 const TransactionFilters = ({ filters, onFilterChange, onClearFilters }) => {
