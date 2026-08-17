@@ -1,6 +1,5 @@
 -- database/schema.sql
 
--- Users table
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -10,10 +9,9 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Transactions table
 CREATE TABLE transactions (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   type VARCHAR(20) NOT NULL CHECK (type IN ('income', 'expense')),
   amount DECIMAL(10, 2) NOT NULL CHECK (amount > 0),
   category VARCHAR(50) NOT NULL,
@@ -23,10 +21,9 @@ CREATE TABLE transactions (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Budgets table
 CREATE TABLE budgets (
   id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   category VARCHAR(50) NOT NULL,
   amount DECIMAL(10, 2) NOT NULL CHECK (amount > 0),
   month DATE NOT NULL,
@@ -35,7 +32,26 @@ CREATE TABLE budgets (
   UNIQUE(user_id, category, month)
 );
 
--- Indexes for performance
+-- Indexes
 CREATE INDEX idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX idx_transactions_user_date ON transactions(user_id, date);
 CREATE INDEX idx_budgets_user_month ON budgets(user_id, month);
+CREATE INDEX idx_transactions_budget_spending ON transactions(user_id, type, date, category);
+
+-- Fix: Auto-update updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_transactions_updated_at BEFORE UPDATE ON transactions
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_budgets_updated_at BEFORE UPDATE ON budgets
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

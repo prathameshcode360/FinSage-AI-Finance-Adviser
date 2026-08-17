@@ -1,9 +1,11 @@
 // src/components/budgets/BudgetForm/BudgetForm.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Input from "../../common/Input/Input";
 import Select from "../../common/Select/Select";
 import Button from "../../common/Button/Button";
-import { getAllCategories } from "../../../constants/categories.js";
+import {
+  EXPENSE_CATEGORIES, // Sirf expense categories import karo
+} from "../../../constants/categories.js";
 import styles from "./BudgetForm.module.css";
 
 const BudgetForm = ({ budget, month, onSave, onCancel }) => {
@@ -19,10 +21,13 @@ const BudgetForm = ({ budget, month, onSave, onCancel }) => {
 
   const [errors, setErrors] = useState({});
 
-  const categoryOptions = getAllCategories().map((cat) => ({
-    value: cat,
-    label: cat,
-  }));
+  // Fix: Directly use EXPENSE_CATEGORIES
+  const categoryOptions = useMemo(() => {
+    return EXPENSE_CATEGORIES.map((cat) => ({
+      value: cat,
+      label: cat,
+    }));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

@@ -10,16 +10,18 @@ const BudgetCard = ({ budget, onEdit, onDelete }) => {
     category,
     amount,
     spent = 0,
-    remaining,
+    remaining = 0,
     utilization_percentage = 0,
   } = budget;
 
+  const utilization = Number(utilization_percentage) || 0;
+
   const status =
-    utilization_percentage >= 100
+    utilization >= 100
       ? "over-budget"
-      : utilization_percentage >= 90
+      : utilization >= 90
         ? "near-limit"
-        : utilization_percentage >= 70
+        : utilization >= 70
           ? "moderate"
           : "healthy";
 
@@ -69,14 +71,14 @@ const BudgetCard = ({ budget, onEdit, onDelete }) => {
           <div
             className={styles.progressFill}
             style={{
-              width: `${Math.min(utilization_percentage, 100)}%`,
+              width: `${Math.min(utilization, 100)}%`,
               backgroundColor: statusColor,
             }}
           />
         </div>
         <div className={styles.progressInfo}>
           <span className={styles.utilization}>
-            {utilization_percentage.toFixed(0)}% used
+            {utilization.toFixed(0)}% used
           </span>
           <span className={`${styles.status} ${styles[status]}`}>
             {statusLabel}

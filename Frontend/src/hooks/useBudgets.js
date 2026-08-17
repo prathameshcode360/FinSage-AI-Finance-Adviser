@@ -33,7 +33,10 @@ export const useBudgets = (initialMonth = null) => {
       return { success: true, budget: newBudget };
     } catch (error) {
       console.error("Error adding budget:", error);
-      return { success: false, error: "Failed to add budget" };
+      // Fix: Backend se exact error message lelo
+      const errorMessage =
+        error.response?.data?.error || "Failed to add budget";
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -44,7 +47,10 @@ export const useBudgets = (initialMonth = null) => {
       return { success: true, budget: updated };
     } catch (error) {
       console.error("Error updating budget:", error);
-      return { success: false, error: "Failed to update budget" };
+      // Fix: Backend se exact error message lelo
+      const errorMessage =
+        error.response?.data?.error || "Failed to update budget";
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -55,7 +61,10 @@ export const useBudgets = (initialMonth = null) => {
       return { success: true };
     } catch (error) {
       console.error("Error deleting budget:", error);
-      return { success: false, error: "Failed to delete budget" };
+      // Fix: Backend se exact error message lelo
+      const errorMessage =
+        error.response?.data?.error || "Failed to delete budget";
+      return { success: false, error: errorMessage };
     }
   };
 

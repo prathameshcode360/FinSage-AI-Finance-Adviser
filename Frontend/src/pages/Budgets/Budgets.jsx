@@ -1,5 +1,5 @@
 // src/pages/Budgets/Budgets.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import budgetService from "../../services/budget.service";
 import BudgetCard from "../../components/budgets/BudgetCard/BudgetCard";
 import BudgetForm from "../../components/budgets/BudgetForm/BudgetForm";
@@ -19,12 +19,9 @@ const Budgets = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    fetchBudgets();
-  }, [selectedMonth]);
-
-  const fetchBudgets = async () => {
+  const fetchBudgets = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -36,7 +33,11 @@ const Budgets = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    fetchBudgets();
+  }, [fetchBudgets]);
 
   const handleAddBudget = () => {
     setEditingBudget(null);
@@ -52,16 +53,25 @@ const Budgets = () => {
     if (!window.confirm("Are you sure you want to delete this budget?")) return;
 
     try {
+      setActionLoading(true);
+      setError(null);
       await budgetService.deleteBudget(id);
       await fetchBudgets();
     } catch (error) {
       console.error("Error deleting budget:", error);
-      setError("Failed to delete budget");
+      // Fix: Backend se exact error message lelo
+      const errorMessage =
+        error.response?.data?.error || "Failed to delete budget";
+      setError(errorMessage);
+    } finally {
+      setActionLoading(false);
     }
   };
 
   const handleSaveBudget = async (data) => {
     try {
+      setActionLoading(true);
+      setError(null);
       if (editingBudget) {
         await budgetService.updateBudget(editingBudget.id, data);
       } else {
@@ -72,8 +82,13 @@ const Budgets = () => {
       await fetchBudgets();
     } catch (error) {
       console.error("Error saving budget:", error);
-      setError("Failed to save budget");
+      // Fix: Backend se exact error message lelo
+      const errorMessage =
+        error.response?.data?.error || "Failed to save budget";
+      setError(errorMessage);
       throw error;
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -81,7 +96,7 @@ const Budgets = () => {
     setSelectedMonth(e.target.value);
   };
 
-  const getMonthOptions = () => {
+  const getMonthOptions = useMemo(() => {
     const options = [];
     const now = new Date();
     for (let i = 0; i < 12; i++) {
@@ -91,7 +106,7 @@ const Budgets = () => {
       options.push({ value, label });
     }
     return options;
-  };
+  }, []);
 
   return (
     <div className={styles.budgets}>
@@ -105,13 +120,16 @@ const Budgets = () => {
             value={selectedMonth}
             onChange={handleMonthChange}
             className={styles.monthSelect}>
-            {getMonthOptions().map((option) => (
+            {getMonthOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
-          <Button variant="primary" onClick={handleAddBudget}>
+          <Button
+            variant="primary"
+            onClick={handleAddBudget}
+            disabled={actionLoading}>
             + Create Budget
           </Button>
         </div>
@@ -131,7 +149,10 @@ const Budgets = () => {
           description="Create your first budget to start tracking your spending"
           icon="💰"
           action={
-            <Button variant="primary" onClick={handleAddBudget}>
+            <Button
+              variant="primary"
+              onClick={handleAddBudget}
+              disabled={actionLoading}>
               Create Budget
             </Button>
           }
