@@ -2,12 +2,8 @@
 import api from "./api";
 
 const transactionService = {
-  getTransactions: async (filters = {}) => {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.append(key, value);
-    });
-    const response = await api.get(`/transactions?${params}`);
+  getTransactions: async () => {
+    const response = await api.get("/transactions");
     return response.data.transactions;
   },
 

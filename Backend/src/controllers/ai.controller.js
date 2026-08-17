@@ -13,12 +13,15 @@ exports.chat = async (req, res, next) => {
 
     // Gather financial context for the user
     const now = new Date();
+
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
       .toISOString()
       .split("T")[0];
+
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
       .toISOString()
       .split("T")[0];
+
     const month = startDate.substring(0, 7);
 
     // Get summary
@@ -28,10 +31,11 @@ exports.chat = async (req, res, next) => {
       endDate,
     );
 
-    // Get recent transactions
-    const recentTransactions = await Transaction.findByUser(req.user.id, {
-      limit: 10,
-    });
+    // Get recent transactions for AI context
+    const recentTransactions = await Transaction.findRecentByUser(
+      req.user.id,
+      10,
+    );
 
     // Get category breakdown
     const categoryBreakdown = await Transaction.getCategoryBreakdown(
@@ -47,8 +51,11 @@ exports.chat = async (req, res, next) => {
     const financialContext = {
       balance:
         parseFloat(summary.total_income) - parseFloat(summary.total_expenses),
+
       totalIncome: parseFloat(summary.total_income),
+
       totalExpenses: parseFloat(summary.total_expenses),
+
       recentTransactions: recentTransactions.map((t) => ({
         type: t.type,
         amount: parseFloat(t.amount),
@@ -56,10 +63,12 @@ exports.chat = async (req, res, next) => {
         description: t.description,
         date: t.date,
       })),
+
       categoryBreakdown: categoryBreakdown.map((c) => ({
         category: c.category,
         amount: parseFloat(c.total_amount),
       })),
+
       budgets: budgets.map((b) => ({
         category: b.category,
         budgetAmount: parseFloat(b.amount),
@@ -67,6 +76,7 @@ exports.chat = async (req, res, next) => {
         remaining: parseFloat(b.remaining),
         utilization: parseFloat(b.utilization_percentage),
       })),
+
       month,
     };
 
@@ -86,35 +96,48 @@ exports.getInsight = async (req, res, next) => {
   try {
     // Gather financial context
     const now = new Date();
+
     const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
       .toISOString()
       .split("T")[0];
+
     const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
       .toISOString()
       .split("T")[0];
+
     const month = startDate.substring(0, 7);
 
+    // Get summary
     const summary = await Transaction.getSummary(
       req.user.id,
       startDate,
       endDate,
     );
+
+    // Get category breakdown
     const categoryBreakdown = await Transaction.getCategoryBreakdown(
       req.user.id,
       startDate,
       endDate,
     );
+
+    // Get budgets
     const budgets = await Budget.getBudgetWithSpending(req.user.id, month);
 
+    // Build financial context
     const financialContext = {
       balance:
         parseFloat(summary.total_income) - parseFloat(summary.total_expenses),
+
       totalIncome: parseFloat(summary.total_income),
+
       totalExpenses: parseFloat(summary.total_expenses),
+
       categoryBreakdown: categoryBreakdown.map((c) => ({
         category: c.category,
         amount: parseFloat(c.total_amount),
       })),
+
       budgets: budgets.map((b) => ({
         category: b.category,
         budgetAmount: parseFloat(b.amount),

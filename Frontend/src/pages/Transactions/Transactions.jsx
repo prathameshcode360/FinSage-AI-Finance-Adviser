@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import transactionService from "../../services/transaction.service";
 import TransactionList from "../../components/transactions/TransactionList/TransactionList";
 import TransactionForm from "../../components/transactions/TransactionForm/TransactionForm";
-import TransactionFilters from "../../components/transactions/TransactionFilters/TransactionFilters";
 import Button from "../../components/common/Button/Button";
 import Modal from "../../components/common/Modal/Modal";
 import styles from "./Transactions.module.css";
@@ -11,20 +10,21 @@ import styles from "./Transactions.module.css";
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchTransactions();
-  }, [filters]);
+  }, []);
 
   const fetchTransactions = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await transactionService.getTransactions(filters);
+
+      const data = await transactionService.getTransactions();
+
       setTransactions(data);
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -45,8 +45,9 @@ const Transactions = () => {
   };
 
   const handleDeleteTransaction = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this transaction?"))
+    if (!window.confirm("Are you sure you want to delete this transaction?")) {
       return;
+    }
 
     try {
       await transactionService.deleteTransaction(id);
@@ -64,22 +65,16 @@ const Transactions = () => {
       } else {
         await transactionService.createTransaction(data);
       }
+
       setIsModalOpen(false);
       setEditingTransaction(null);
+
       await fetchTransactions();
     } catch (error) {
       console.error("Error saving transaction:", error);
       setError("Failed to save transaction");
       throw error;
     }
-  };
-
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({});
   };
 
   return (
@@ -91,16 +86,11 @@ const Transactions = () => {
             Manage and track all your financial transactions
           </p>
         </div>
+
         <Button variant="primary" onClick={handleAddTransaction}>
           + Add Transaction
         </Button>
       </div>
-
-      <TransactionFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={handleClearFilters}
-      />
 
       {error && <div className={styles.errorMessage}>{error}</div>}
 

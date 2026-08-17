@@ -8,6 +8,7 @@ class Transaction {
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
+
     const values = [
       userId,
       type,
@@ -16,59 +17,50 @@ class Transaction {
       description,
       date || new Date(),
     ];
+
     const result = await pool.query(query, values);
+
     return result.rows[0];
   }
 
-  static async findByUser(userId, filters = {}) {
-    let query = "SELECT * FROM transactions WHERE user_id = $1";
-    const values = [userId];
-    let paramCount = 2;
+  // Get all transactions for a user
+  static async findByUser(userId) {
+    const query = `
+      SELECT *
+      FROM transactions
+      WHERE user_id = $1
+      ORDER BY date DESC, created_at DESC
+    `;
 
-    if (filters.type) {
-      query += ` AND type = $${paramCount}`;
-      values.push(filters.type);
-      paramCount++;
-    }
+    const result = await pool.query(query, [userId]);
 
-    if (filters.category) {
-      query += ` AND category = $${paramCount}`;
-      values.push(filters.category);
-      paramCount++;
-    }
+    return result.rows;
+  }
 
-    if (filters.startDate) {
-      query += ` AND date >= $${paramCount}`;
-      values.push(filters.startDate);
-      paramCount++;
-    }
+  // Get recent transactions for AI context
+  static async findRecentByUser(userId, limit = 10) {
+    const query = `
+      SELECT *
+      FROM transactions
+      WHERE user_id = $1
+      ORDER BY date DESC, created_at DESC
+      LIMIT $2
+    `;
 
-    if (filters.endDate) {
-      query += ` AND date <= $${paramCount}`;
-      values.push(filters.endDate);
-      paramCount++;
-    }
+    const result = await pool.query(query, [userId, limit]);
 
-    if (filters.search) {
-      query += ` AND (description ILIKE $${paramCount} OR category ILIKE $${paramCount})`;
-      values.push(`%${filters.search}%`);
-      paramCount++;
-    }
-
-    query += " ORDER BY date DESC, created_at DESC";
-
-    if (filters.limit) {
-      query += ` LIMIT $${paramCount}`;
-      values.push(filters.limit);
-    }
-
-    const result = await pool.query(query, values);
     return result.rows;
   }
 
   static async findById(id, userId) {
-    const query = "SELECT * FROM transactions WHERE id = $1 AND user_id = $2";
+    const query = `
+      SELECT *
+      FROM transactions
+      WHERE id = $1 AND user_id = $2
+    `;
+
     const result = await pool.query(query, [id, userId]);
+
     return result.rows[0];
   }
 
@@ -109,10 +101,12 @@ class Transaction {
 
     fields.push(`updated_at = CURRENT_TIMESTAMP`);
 
-    if (fields.length === 0) return null;
+    if (fields.length === 0) {
+      return null;
+    }
 
     const query = `
-      UPDATE transactions 
+      UPDATE transactions
       SET ${fields.join(", ")}
       WHERE id = $${paramCount} AND user_id = $${paramCount + 1}
       RETURNING *
@@ -121,22 +115,37 @@ class Transaction {
     values.push(id, userId);
 
     const result = await pool.query(query, values);
+
     return result.rows[0];
   }
 
   static async delete(id, userId) {
-    const query =
-      "DELETE FROM transactions WHERE id = $1 AND user_id = $2 RETURNING *";
+    const query = `
+      DELETE FROM transactions
+      WHERE id = $1 AND user_id = $2
+      RETURNING *
+    `;
+
     const result = await pool.query(query, [id, userId]);
+
     return result.rows[0];
   }
 
   static async getSummary(userId, startDate, endDate) {
     const query = `
       SELECT 
-        COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as total_income,
-        COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expenses,
+        COALESCE(
+          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END),
+          0
+        ) as total_income,
+
+        COALESCE(
+          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END),
+          0
+        ) as total_expenses,
+
         COUNT(*) as transaction_count
+
       FROM transactions
       WHERE user_id = $1
         AND date >= $2
@@ -144,6 +153,7 @@ class Transaction {
     `;
 
     const result = await pool.query(query, [userId, startDate, endDate]);
+
     return result.rows[0];
   }
 
@@ -152,6 +162,7 @@ class Transaction {
 
     // Calculate the actual last day of the requested month
     const lastDay = new Date(year, month, 0).getDate();
+
     const endDate = `${year}-${String(month).padStart(2, "0")}-${String(
       lastDay,
     ).padStart(2, "0")}`;
@@ -169,6 +180,7 @@ class Transaction {
     `;
 
     const result = await pool.query(query, [userId, startDate, endDate]);
+
     return result.rows;
   }
 
@@ -187,6 +199,7 @@ class Transaction {
     `;
 
     const result = await pool.query(query, [userId, startDate, endDate]);
+
     return result.rows;
   }
 }
