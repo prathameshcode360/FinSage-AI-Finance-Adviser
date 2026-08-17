@@ -1,696 +1,310 @@
-// seeder.js
-
+// backend/seeder.js
 require("dotenv").config();
-
-const bcrypt = require("bcrypt");
 const { pool } = require("./config/db.js");
+const User = require("./models/user.model.js");
+const Transaction = require("./models/transaction.model");
+const Budget = require("./models/budget.model");
+const {
+  EXPENSE_CATEGORIES,
+  INCOME_CATEGORIES,
+} = require("./constants/categories");
 
-// ============================================================
-// DEMO USER
-// ============================================================
-
-const DEMO_USER = {
-  name: "FinSage Demo User",
-  email: "demo@finsage.com",
+// Dummy User Data
+const DUMMY_USER = {
+  name: "Demo User",
+  email: "demouser@gmail.com",
   password: "Demo@123",
 };
 
-// ============================================================
-// CATEGORIES
-// Keep these exactly aligned with frontend categories.js
-// ============================================================
+// Generate random number between min and max
+const randomBetween = (min, max) => {
+  return Math.round((Math.random() * (max - min) + min) * 100) / 100;
+};
 
-const INCOME_CATEGORIES = [
-  "Salary",
-  "Freelance",
-  "Investments",
-  "Rental",
-  "Business",
-  "Gifts",
-  "Other Income",
-];
+// Random date within a month range
+const randomDate = (year, month, dayRange = [1, 28]) => {
+  const day =
+    Math.floor(Math.random() * (dayRange[1] - dayRange[0] + 1)) + dayRange[0];
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+};
 
-const EXPENSE_CATEGORIES = [
-  "Housing",
-  "Food & Dining",
-  "Transportation",
-  "Utilities",
-  "Insurance",
-  "Healthcare",
-  "Entertainment",
-  "Shopping",
-  "Education",
-  "Groceries",
-  "Dining Out",
-  "Rent",
-  "Mortgage",
-  "Car",
-  "Gas",
-  "Phone",
-  "Internet",
-  "Subscriptions",
-  "Clothing",
-  "Travel",
-  "Other Expenses",
-];
+// Random item from array
+const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-// ============================================================
-// HELPERS
-// ============================================================
+// Generate transaction description
+const generateDescription = (category, type) => {
+  const incomeDescriptions = [
+    "Salary for month",
+    "Freelance project payment",
+    "Dividend received",
+    "Rent received",
+    "Business revenue",
+    "Gift received",
+    "Bonus payment",
+    "Consulting fees",
+    "Interest earned",
+    "Refund received",
+  ];
 
-function pad(value) {
-  return String(value).padStart(2, "0");
-}
-
-function dateString(year, month, day) {
-  return `${year}-${pad(month)}-${pad(day)}`;
-}
-
-function monthString(year, month) {
-  return `${year}-${pad(month)}-01`;
-}
-
-function randomFrom(array) {
-  return array[Math.floor(Math.random() * array.length)];
-}
-
-function randomAmount(min, max) {
-  return Number((Math.random() * (max - min) + min).toFixed(2));
-}
-
-function createTransaction(userId, type, amount, category, description, date) {
-  return {
-    userId,
-    type,
-    amount,
-    category,
-    description,
-    date,
+  const expenseDescriptions = {
+    Housing: ["Monthly rent", "Maintenance fees", "Property tax"],
+    "Food & Dining": ["Restaurant dinner", "Cafe lunch", "Food delivery"],
+    Transportation: ["Fuel", "Metro card", "Cab ride", "Car maintenance"],
+    Utilities: ["Electricity bill", "Water bill", "Gas bill"],
+    Insurance: ["Health insurance", "Car insurance", "Life insurance"],
+    Healthcare: ["Doctor visit", "Medicine", "Dental checkup"],
+    Entertainment: ["Movie tickets", "Concert", "Netflix subscription"],
+    Shopping: ["Clothes", "Shoes", "Accessories", "Electronics"],
+    Education: ["Course fees", "Books", "Tuition"],
+    Groceries: ["Weekly groceries", "Monthly supplies"],
+    "Dining Out": ["Dinner at restaurant", "Lunch with colleagues"],
+    Rent: ["Monthly rent payment"],
+    Mortgage: ["EMI payment"],
+    Car: ["Car wash", "Servicing", "New tires"],
+    Gas: ["Petrol", "Diesel"],
+    Phone: ["Mobile recharge", "Phone bill"],
+    Internet: ["WiFi bill", "Broadband"],
+    Subscriptions: ["Spotify", "YouTube Premium", "Amazon Prime"],
+    Clothing: ["New dress", "Jeans", "Jacket"],
+    Travel: ["Flight ticket", "Hotel booking", "Bus fare"],
+    "Other Expenses": ["Miscellaneous", "Others"],
   };
-}
 
-// ============================================================
-// TRANSACTION GENERATOR
-// ============================================================
+  if (type === "income") {
+    return randomItem(incomeDescriptions);
+  } else {
+    const descs = expenseDescriptions[category] || ["Expense purchase"];
+    return randomItem(descs);
+  }
+};
 
-function generateTransactions(userId) {
+// Generate transactions for a specific month
+const generateTransactionsForMonth = (userId, year, month) => {
   const transactions = [];
+  const numTransactions = randomBetween(15, 30); // 15-30 transactions per month
 
-  // ----------------------------------------------------------
-  // JUNE 2026
-  // ----------------------------------------------------------
-
-  // Income
-  transactions.push(
-    createTransaction(
+  // Some income transactions
+  const numIncomes = randomBetween(2, 5);
+  for (let i = 0; i < numIncomes; i++) {
+    const category = randomItem(INCOME_CATEGORIES);
+    const amount = randomBetween(5000, 150000);
+    const date = randomDate(year, month, [1, 28]);
+    transactions.push({
       userId,
-      "income",
-      5200,
-      "Salary",
-      "Monthly salary",
-      dateString(2026, 6, 1),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      850,
-      "Freelance",
-      "Website development project",
-      dateString(2026, 6, 8),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      320,
-      "Investments",
-      "Investment return",
-      dateString(2026, 6, 15),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      450,
-      "Rental",
-      "Rental income",
-      dateString(2026, 6, 28),
-    ),
-  );
-
-  // Expenses
-  const juneExpenses = [
-    ["Rent", 1800, "Monthly rent"],
-    ["Food & Dining", 420, "Restaurants and food delivery"],
-    ["Groceries", 310, "Weekly groceries"],
-    ["Transportation", 260, "Public transport and cabs"],
-    ["Utilities", 180, "Electricity and water bill"],
-    ["Internet", 60, "Monthly internet bill"],
-    ["Phone", 45, "Mobile phone bill"],
-    ["Entertainment", 280, "Movies and entertainment"],
-    ["Shopping", 360, "General shopping"],
-    ["Healthcare", 150, "Pharmacy and medical expenses"],
-    ["Subscriptions", 95, "Streaming subscriptions"],
-    ["Gas", 120, "Fuel expenses"],
-    ["Education", 200, "Online course"],
-    ["Clothing", 180, "Clothes shopping"],
-    ["Travel", 450, "Weekend trip"],
-    ["Insurance", 220, "Insurance payment"],
-    ["Dining Out", 240, "Dinner with friends"],
-    ["Car", 300, "Car maintenance"],
-    ["Other Expenses", 120, "Miscellaneous expenses"],
-  ];
-
-  juneExpenses.forEach(([category, amount, description], index) => {
-    transactions.push(
-      createTransaction(
-        userId,
-        "expense",
-        amount,
-        category,
-        description,
-        dateString(2026, 6, (index % 27) + 2),
-      ),
-    );
-  });
-
-  // Additional June transactions
-  for (let i = 0; i < 18; i++) {
-    const category = randomFrom([
-      "Food & Dining",
-      "Groceries",
-      "Transportation",
-      "Entertainment",
-      "Shopping",
-      "Dining Out",
-    ]);
-
-    const amount = randomAmount(25, 180);
-
-    transactions.push(
-      createTransaction(
-        userId,
-        "expense",
-        amount,
-        category,
-        `${category} purchase`,
-        dateString(2026, 6, (i % 25) + 3),
-      ),
-    );
+      type: "income",
+      amount,
+      category,
+      description: generateDescription(category, "income"),
+      date,
+    });
   }
 
-  // ----------------------------------------------------------
-  // JULY 2026
-  // ----------------------------------------------------------
-
-  transactions.push(
-    createTransaction(
+  // Expense transactions
+  const numExpenses = numTransactions - numIncomes;
+  for (let i = 0; i < numExpenses; i++) {
+    const category = randomItem(EXPENSE_CATEGORIES);
+    const amount = randomBetween(100, 50000);
+    const date = randomDate(year, month, [1, 28]);
+    transactions.push({
       userId,
-      "income",
-      5200,
-      "Salary",
-      "Monthly salary",
-      dateString(2026, 7, 1),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      1200,
-      "Freelance",
-      "Freelance development project",
-      dateString(2026, 7, 7),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      500,
-      "Business",
-      "Small business income",
-      dateString(2026, 7, 18),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      300,
-      "Investments",
-      "Investment return",
-      dateString(2026, 7, 25),
-    ),
-  );
-
-  const julyExpenses = [
-    ["Rent", 1800, "Monthly rent"],
-    ["Food & Dining", 580, "Restaurants and food delivery"],
-    ["Groceries", 390, "Monthly groceries"],
-    ["Transportation", 330, "Cabs and public transport"],
-    ["Utilities", 210, "Electricity and water"],
-    ["Internet", 60, "Monthly internet"],
-    ["Phone", 45, "Mobile phone bill"],
-    ["Entertainment", 430, "Movies, games and outings"],
-    ["Shopping", 620, "Shopping expenses"],
-    ["Healthcare", 280, "Medical expenses"],
-    ["Subscriptions", 110, "Streaming and software subscriptions"],
-    ["Gas", 150, "Fuel expenses"],
-    ["Education", 250, "Online learning"],
-    ["Clothing", 300, "Clothing purchases"],
-    ["Travel", 650, "Travel expenses"],
-    ["Insurance", 220, "Insurance payment"],
-    ["Dining Out", 380, "Restaurant dinners"],
-    ["Car", 350, "Car service"],
-    ["Other Expenses", 140, "Miscellaneous"],
-  ];
-
-  julyExpenses.forEach(([category, amount, description], index) => {
-    transactions.push(
-      createTransaction(
-        userId,
-        "expense",
-        amount,
-        category,
-        description,
-        dateString(2026, 7, (index % 28) + 2),
-      ),
-    );
-  });
-
-  for (let i = 0; i < 20; i++) {
-    const category = randomFrom([
-      "Food & Dining",
-      "Groceries",
-      "Transportation",
-      "Entertainment",
-      "Shopping",
-      "Dining Out",
-      "Travel",
-    ]);
-
-    const amount = randomAmount(30, 220);
-
-    transactions.push(
-      createTransaction(
-        userId,
-        "expense",
-        amount,
-        category,
-        `${category} purchase`,
-        dateString(2026, 7, (i % 27) + 3),
-      ),
-    );
-  }
-
-  // ----------------------------------------------------------
-  // AUGUST 2026 - CURRENT MONTH
-  // Important for AI testing
-  // ----------------------------------------------------------
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      5200,
-      "Salary",
-      "Monthly salary",
-      dateString(2026, 8, 1),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      900,
-      "Freelance",
-      "Freelance development project",
-      dateString(2026, 8, 5),
-    ),
-  );
-
-  transactions.push(
-    createTransaction(
-      userId,
-      "income",
-      350,
-      "Investments",
-      "Investment return",
-      dateString(2026, 8, 10),
-    ),
-  );
-
-  // Intentionally high current-month spending
-  // so AI can detect overspending.
-
-  const augustExpenses = [
-    ["Rent", 1800, "Monthly rent"],
-    ["Food & Dining", 620, "Restaurants and food delivery"],
-    ["Groceries", 420, "Weekly groceries"],
-    ["Transportation", 280, "Cabs and public transport"],
-    ["Utilities", 190, "Electricity and water"],
-    ["Internet", 60, "Monthly internet"],
-    ["Phone", 45, "Mobile phone bill"],
-    ["Entertainment", 550, "Movies and entertainment"],
-    ["Shopping", 780, "Shopping expenses"],
-    ["Healthcare", 120, "Pharmacy"],
-    ["Subscriptions", 105, "Streaming subscriptions"],
-    ["Gas", 140, "Fuel expenses"],
-    ["Education", 180, "Online course"],
-    ["Clothing", 320, "Clothing purchase"],
-    ["Travel", 700, "Travel booking"],
-    ["Insurance", 220, "Insurance payment"],
-    ["Dining Out", 460, "Restaurant dinners"],
-    ["Car", 300, "Car maintenance"],
-    ["Other Expenses", 150, "Miscellaneous expenses"],
-  ];
-
-  augustExpenses.forEach(([category, amount, description], index) => {
-    transactions.push(
-      createTransaction(
-        userId,
-        "expense",
-        amount,
-        category,
-        description,
-        dateString(2026, 8, (index % 13) + 2),
-      ),
-    );
-  });
-
-  // Additional August spending
-  for (let i = 0; i < 25; i++) {
-    const category = randomFrom([
-      "Food & Dining",
-      "Groceries",
-      "Transportation",
-      "Entertainment",
-      "Shopping",
-      "Dining Out",
-      "Travel",
-      "Subscriptions",
-    ]);
-
-    const amount = randomAmount(25, 250);
-
-    transactions.push(
-      createTransaction(
-        userId,
-        "expense",
-        amount,
-        category,
-        `${category} purchase`,
-        dateString(2026, 8, (i % 14) + 1),
-      ),
-    );
+      type: "expense",
+      amount,
+      category,
+      description: generateDescription(category, "expense"),
+      date,
+    });
   }
 
   return transactions;
-}
+};
 
-// ============================================================
-// BUDGET GENERATOR
-// ============================================================
-
-function generateBudgets(userId) {
+// Generate budgets for a specific month
+const generateBudgetsForMonth = (userId, year, month) => {
   const budgets = [];
+  const monthStr = `${year}-${String(month).padStart(2, "0")}`;
 
-  const months = [
-    {
-      year: 2026,
-      month: 6,
-      budgets: {
-        "Food & Dining": 500,
-        Groceries: 400,
-        Transportation: 500,
-        Entertainment: 350,
-        Shopping: 500,
-        Utilities: 250,
-        Healthcare: 300,
-        Subscriptions: 150,
-        Travel: 600,
-        "Dining Out": 300,
-      },
-    },
-    {
-      year: 2026,
-      month: 7,
-      budgets: {
-        "Food & Dining": 500,
-        Groceries: 450,
-        Transportation: 500,
-        Entertainment: 400,
-        Shopping: 500,
-        Utilities: 250,
-        Healthcare: 300,
-        Subscriptions: 150,
-        Travel: 500,
-        "Dining Out": 300,
-      },
-    },
-    {
-      year: 2026,
-      month: 8,
-      budgets: {
-        "Food & Dining": 500,
-        Groceries: 500,
-        Transportation: 600,
-        Entertainment: 400,
-        Shopping: 500,
-        Utilities: 250,
-        Healthcare: 300,
-        Subscriptions: 150,
-        Travel: 500,
-        "Dining Out": 300,
-        Clothing: 250,
-        Gas: 200,
-      },
-    },
+  // Create budgets for 8-12 expense categories
+  const numBudgets = randomBetween(8, 12);
+  const selectedCategories = [];
+  const shuffled = [...EXPENSE_CATEGORIES].sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < numBudgets && i < shuffled.length; i++) {
+    selectedCategories.push(shuffled[i]);
+  }
+
+  // Ensure some major categories are always included
+  const mandatoryCategories = [
+    "Housing",
+    "Food & Dining",
+    "Transportation",
+    "Utilities",
   ];
+  mandatoryCategories.forEach((cat) => {
+    if (!selectedCategories.includes(cat)) {
+      selectedCategories.push(cat);
+    }
+  });
 
-  months.forEach(({ year, month, budgets: monthlyBudgets }) => {
-    Object.entries(monthlyBudgets).forEach(([category, amount]) => {
-      budgets.push({
-        userId,
-        category,
-        amount,
-        month: monthString(year, month),
-      });
+  selectedCategories.forEach((category) => {
+    // Budget amount based on category type
+    let amount;
+    switch (category) {
+      case "Housing":
+      case "Rent":
+      case "Mortgage":
+        amount = randomBetween(15000, 50000);
+        break;
+      case "Food & Dining":
+      case "Dining Out":
+      case "Groceries":
+        amount = randomBetween(5000, 20000);
+        break;
+      case "Transportation":
+      case "Car":
+      case "Gas":
+        amount = randomBetween(3000, 15000);
+        break;
+      case "Utilities":
+      case "Phone":
+      case "Internet":
+        amount = randomBetween(2000, 8000);
+        break;
+      case "Healthcare":
+      case "Insurance":
+        amount = randomBetween(3000, 15000);
+        break;
+      default:
+        amount = randomBetween(2000, 10000);
+    }
+
+    budgets.push({
+      userId,
+      category,
+      amount: Math.round(amount),
+      month: monthStr,
     });
   });
 
   return budgets;
-}
+};
 
-// ============================================================
-// SEED DATABASE
-// ============================================================
-
-async function seedDatabase() {
-  const client = await pool.connect();
+// Main seeder function
+async function runSeeder() {
+  console.log("🌱 Starting seeder...");
 
   try {
-    console.log("\n🌱 Starting FinSage database seeder...\n");
-
-    await client.query("BEGIN");
-
-    // --------------------------------------------------------
-    // 1. Remove previous demo user
-    // --------------------------------------------------------
-
-    console.log("🧹 Removing existing demo user...");
-
-    await client.query("DELETE FROM users WHERE email = $1", [DEMO_USER.email]);
-
-    // --------------------------------------------------------
-    // 2. Create demo user
-    // --------------------------------------------------------
-
-    console.log("👤 Creating demo user...");
-
-    const hashedPassword = await bcrypt.hash(DEMO_USER.password, 10);
-
-    const userResult = await client.query(
-      `
-        INSERT INTO users (name, email, password_hash)
-        VALUES ($1, $2, $3)
-        RETURNING id, name, email
-      `,
-      [DEMO_USER.name, DEMO_USER.email, hashedPassword],
+    // 1. Delete existing data (clean slate)
+    console.log("🗑️ Clearing existing data...");
+    await pool.query(
+      "DELETE FROM transactions WHERE user_id IN (SELECT id FROM users WHERE email = $1)",
+      [DUMMY_USER.email],
     );
+    await pool.query(
+      "DELETE FROM budgets WHERE user_id IN (SELECT id FROM users WHERE email = $1)",
+      [DUMMY_USER.email],
+    );
+    await pool.query("DELETE FROM users WHERE email = $1", [DUMMY_USER.email]);
+    console.log("✅ Existing data cleared");
 
-    const user = userResult.rows[0];
+    // 2. Create dummy user
+    console.log(`👤 Creating user: ${DUMMY_USER.email}`);
+    const user = await User.create(DUMMY_USER);
+    console.log(`✅ User created with ID: ${user.id}`);
 
-    console.log(`   User ID: ${user.id}`);
-    console.log(`   Email: ${user.email}`);
+    // 3. Generate transactions for 3 months (June, July, August 2026)
+    const months = [
+      { year: 2026, month: 6 }, // June
+      { year: 2026, month: 7 }, // July
+      { year: 2026, month: 8 }, // August
+    ];
 
-    // --------------------------------------------------------
-    // 3. Generate transactions
-    // --------------------------------------------------------
+    let totalTransactions = 0;
+    let totalBudgets = 0;
 
-    const transactions = generateTransactions(user.id);
+    for (const { year, month } of months) {
+      console.log(
+        `\n📅 Generating data for ${year}-${String(month).padStart(2, "0")}`,
+      );
 
-    console.log(`💳 Inserting ${transactions.length} transactions...`);
+      // Generate transactions
+      const transactions = generateTransactionsForMonth(user.id, year, month);
+      for (const tx of transactions) {
+        await Transaction.create(tx);
+        totalTransactions++;
+      }
+      console.log(`   ✅ ${transactions.length} transactions created`);
 
-    for (const transaction of transactions) {
-      await client.query(
-        `
-          INSERT INTO transactions
-            (user_id, type, amount, category, description, date)
-          VALUES
-            ($1, $2, $3, $4, $5, $6)
-        `,
-        [
-          transaction.userId,
-          transaction.type,
-          transaction.amount,
-          transaction.category,
-          transaction.description,
-          transaction.date,
-        ],
+      // Generate budgets
+      const budgets = generateBudgetsForMonth(user.id, year, month);
+      for (const budget of budgets) {
+        await Budget.create(budget);
+        totalBudgets++;
+      }
+      console.log(`   ✅ ${budgets.length} budgets created`);
+    }
+
+    // 4. Add some extra transactions for variety (different months)
+    console.log(`\n📅 Adding extra varied transactions...`);
+
+    // Add some old transactions (May 2026)
+    const extraMonths = [
+      { year: 2026, month: 5, count: 10 },
+      { year: 2026, month: 4, count: 8 },
+    ];
+
+    for (const { year, month, count } of extraMonths) {
+      for (let i = 0; i < count; i++) {
+        const isIncome = Math.random() < 0.2;
+        const category = isIncome
+          ? randomItem(INCOME_CATEGORIES)
+          : randomItem(EXPENSE_CATEGORIES);
+        const amount = isIncome
+          ? randomBetween(10000, 100000)
+          : randomBetween(100, 30000);
+        const date = randomDate(year, month, [1, 28]);
+
+        await Transaction.create({
+          userId: user.id,
+          type: isIncome ? "income" : "expense",
+          amount,
+          category,
+          description: generateDescription(
+            category,
+            isIncome ? "income" : "expense",
+          ),
+          date,
+        });
+        totalTransactions++;
+      }
+      console.log(
+        `   ✅ ${count} transactions created for ${year}-${String(month).padStart(2, "0")}`,
       );
     }
 
-    // --------------------------------------------------------
-    // 4. Generate budgets
-    // --------------------------------------------------------
-
-    const budgets = generateBudgets(user.id);
-
-    console.log(`📊 Inserting ${budgets.length} budgets...`);
-
-    for (const budget of budgets) {
-      await client.query(
-        `
-          INSERT INTO budgets
-            (user_id, category, amount, month)
-          VALUES
-            ($1, $2, $3, $4)
-          ON CONFLICT (user_id, category, month)
-          DO UPDATE SET
-            amount = EXCLUDED.amount,
-            updated_at = CURRENT_TIMESTAMP
-        `,
-        [budget.userId, budget.category, budget.amount, budget.month],
-      );
-    }
-
-    // --------------------------------------------------------
-    // 5. Commit
-    // --------------------------------------------------------
-
-    await client.query("COMMIT");
-
-    // --------------------------------------------------------
-    // 6. Print summary
-    // --------------------------------------------------------
-
-    const transactionSummary = await pool.query(
-      `
-        SELECT
-          COUNT(*) AS total,
-          COUNT(*) FILTER (WHERE type = 'income') AS income_count,
-          COUNT(*) FILTER (WHERE type = 'expense') AS expense_count,
-          COALESCE(
-            SUM(amount) FILTER (WHERE type = 'income'),
-            0
-          ) AS total_income,
-          COALESCE(
-            SUM(amount) FILTER (WHERE type = 'expense'),
-            0
-          ) AS total_expenses
-        FROM transactions
-        WHERE user_id = $1
-      `,
-      [user.id],
-    );
-
-    const budgetSummary = await pool.query(
-      `
-        SELECT COUNT(*) AS total
-        FROM budgets
-        WHERE user_id = $1
-      `,
-      [user.id],
-    );
-
-    const summary = transactionSummary.rows[0];
-
-    console.log("\n========================================");
-    console.log("       FINSAGE SEED COMPLETE");
-    console.log("========================================");
-
-    console.log(`👤 User:         ${user.name}`);
-    console.log(`📧 Email:        ${user.email}`);
-    console.log(`🔑 Password:     ${DEMO_USER.password}`);
-    console.log(`🆔 User ID:      ${user.id}`);
-
-    console.log("\n📊 DATA SUMMARY");
-    console.log("----------------------------------------");
-    console.log(`Transactions:    ${summary.total}`);
-    console.log(`Income:          ${summary.income_count}`);
-    console.log(`Expenses:        ${summary.expense_count}`);
-    console.log(`Total Income:    $${Number(summary.total_income).toFixed(2)}`);
-    console.log(
-      `Total Expenses:  $${Number(summary.total_expenses).toFixed(2)}`,
-    );
-    console.log(
-      `Balance:         $${(
-        Number(summary.total_income) - Number(summary.total_expenses)
-      ).toFixed(2)}`,
-    );
-    console.log(`Budgets:         ${budgetSummary.rows[0].total}`);
-
-    console.log("\n🧪 TEST LOGIN");
-    console.log("----------------------------------------");
-    console.log("Email:    demo@finsage.com");
-    console.log("Password: Demo@123");
-
-    console.log("\n🤖 AI TEST QUESTIONS");
-    console.log("----------------------------------------");
-    console.log("1. Where am I spending the most?");
-    console.log("2. Am I overspending?");
-    console.log("3. How much can I save this month?");
-    console.log("4. Which budgets have I exceeded?");
-    console.log("5. What should I reduce my spending on?");
-    console.log("6. Give me an insight about my finances.");
-
-    console.log("\n📈 ANALYTICS TO TEST");
-    console.log("----------------------------------------");
-    console.log("• Income vs Expense");
-    console.log("• Monthly Trend");
-    console.log("• Category Breakdown");
-    console.log("• Budget Utilization");
-    console.log("• Balance");
-    console.log("• Transaction Count");
-
-    console.log("\n✅ Seeder finished successfully!\n");
+    // 5. Summary
+    console.log("\n" + "=".repeat(50));
+    console.log("🎉 SEEDING COMPLETED SUCCESSFULLY!");
+    console.log("=".repeat(50));
+    console.log(`👤 User: ${DUMMY_USER.email}`);
+    console.log(`🔑 Password: ${DUMMY_USER.password}`);
+    console.log(`📊 Total Transactions: ${totalTransactions}`);
+    console.log(`💰 Total Budgets: ${totalBudgets}`);
+    console.log("\n📅 Data available for months:");
+    console.log("   - April 2026 (8 transactions)");
+    console.log("   - May 2026 (10 transactions)");
+    console.log("   - June 2026 (15-30 transactions)");
+    console.log("   - July 2026 (15-30 transactions)");
+    console.log("   - August 2026 (15-30 transactions)");
+    console.log("\n📊 Budgets available for June, July, August 2026");
+    console.log("=".repeat(50));
   } catch (error) {
-    await client.query("ROLLBACK");
-
-    console.error("\n❌ Seeder failed!");
-    console.error(error);
-    process.exitCode = 1;
+    console.error("❌ Seeding failed:", error.message);
+    console.error(error.stack);
+    process.exit(1);
   } finally {
-    client.release();
     await pool.end();
   }
 }
 
-// ============================================================
-// RUN
-// ============================================================
-
-seedDatabase();
+// Run the seeder
+runSeeder();
