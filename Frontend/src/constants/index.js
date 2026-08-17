@@ -32,5 +32,5 @@ export const MONTHS = [
   "December",
 ];
 
-export const CURRENCY_SYMBOL = "$";
-export const CURRENCY_LOCALE = "en-US";
+export const CURRENCY_SYMBOL = "₹";
+export const CURRENCY_LOCALE = "en-IN";

@@ -157,33 +157,43 @@ class Transaction {
     return result.rows[0];
   }
 
+  // FIX #2: Monthly trend - now returns MONTHLY aggregated data
   static async getMonthlyTrend(userId, year, month) {
-    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+    // For the selected month, get last 6 months of data
+    const startYear = year;
+    const startMonth = month - 5; // Go back 6 months
 
-    // Calculate the actual last day of the requested month
-    const lastDay = new Date(year, month, 0).getDate();
+    // Build date range for last 6 months
+    const startDate = new Date(startYear, startMonth - 1, 1);
+    const endDate = new Date(year, month, 0); // Last day of selected month
 
-    const endDate = `${year}-${String(month).padStart(2, "0")}-${String(
-      lastDay,
-    ).padStart(2, "0")}`;
+    const startDateStr = startDate.toISOString().split("T")[0];
+    const endDateStr = endDate.toISOString().split("T")[0];
 
     const query = `
       SELECT 
-        date,
+        DATE_TRUNC('month', date) as month,
         type,
         SUM(amount) as total_amount
       FROM transactions
       WHERE user_id = $1
-        AND date BETWEEN $2 AND $3
-      GROUP BY date, type
-      ORDER BY date
+        AND date >= $2
+        AND date <= $3
+      GROUP BY DATE_TRUNC('month', date), type
+      ORDER BY month
     `;
 
-    const result = await pool.query(query, [userId, startDate, endDate]);
+    const result = await pool.query(query, [userId, startDateStr, endDateStr]);
 
-    return result.rows;
+    // Transform to match frontend expected format
+    return result.rows.map((row) => ({
+      date: row.month,
+      type: row.type,
+      total_amount: parseFloat(row.total_amount),
+    }));
   }
 
+  // FIX #6: Category breakdown - now includes BOTH income and expense
   static async getCategoryBreakdown(userId, startDate, endDate) {
     const query = `
       SELECT 
@@ -193,9 +203,8 @@ class Transaction {
       FROM transactions
       WHERE user_id = $1
         AND date BETWEEN $2 AND $3
-        AND type = 'expense'
       GROUP BY category, type
-      ORDER BY total_amount DESC
+      ORDER BY type, total_amount DESC
     `;
 
     const result = await pool.query(query, [userId, startDate, endDate]);

@@ -80,9 +80,9 @@ class AIService {
     return `You are FinSage, a professional AI finance adviser. You have access to the user's financial data and should provide practical, data-backed advice.
 
 Current financial context:
-- Balance: $${financialContext.balance?.toFixed(2) || "0.00"}
-- Total Income: $${financialContext.totalIncome?.toFixed(2) || "0.00"}
-- Total Expenses: $${financialContext.totalExpenses?.toFixed(2) || "0.00"}
+- Balance: ₹${financialContext.balance?.toFixed(2) || "0.00"}
+- Total Income: ₹${financialContext.totalIncome?.toFixed(2) || "0.00"}
+- Total Expenses: ₹${financialContext.totalExpenses?.toFixed(2) || "0.00"}
 - Month: ${financialContext.month || "current"}
 
 Recent transactions: ${JSON.stringify(
@@ -113,11 +113,11 @@ Format: Provide clear, structured responses with actionable insights.`;
 
   generateMockResponse(message, context) {
     const responses = {
-      spend: `Based on your spending data, you've spent $${context.totalExpenses?.toFixed(
+      spend: `Based on your spending data, you've spent ₹${context.totalExpenses?.toFixed(
         2,
       )} this month. Your top spending categories include ${context.categoryBreakdown
         ?.slice(0, 3)
-        .map((c) => `${c.category} ($${c.amount.toFixed(2)})`)
+        .map((c) => `${c.category} (₹${c.amount.toFixed(2)})`)
         .join(
           ", ",
         )}. Consider tracking these categories more closely to identify savings opportunities.`,
@@ -126,9 +126,9 @@ Format: Provide clear, structured responses with actionable insights.`;
         context.budgets
           ?.map(
             (b) =>
-              `${b.category}: $${b.spent.toFixed(
+              `${b.category}: ₹${b.spent.toFixed(
                 2,
-              )} of $${b.budgetAmount.toFixed(
+              )} of ₹${b.budgetAmount.toFixed(
                 2,
               )} (${b.utilization.toFixed(0)}% used)`,
           )
@@ -136,11 +136,11 @@ Format: Provide clear, structured responses with actionable insights.`;
         "No budgets set up yet. Consider creating budgets for your main spending categories."
       }`,
 
-      save: `Based on your income of $${context.totalIncome?.toFixed(
+      save: `Based on your income of ₹${context.totalIncome?.toFixed(
         2,
-      )} and expenses of $${context.totalExpenses?.toFixed(
+      )} and expenses of ₹${context.totalExpenses?.toFixed(
         2,
-      )}, you could potentially save $${(
+      )}, you could potentially save ₹${(
         context.totalIncome - context.totalExpenses
       )?.toFixed(
         2,
@@ -149,7 +149,7 @@ Format: Provide clear, structured responses with actionable insights.`;
       category: `Your highest spending categories: ${
         context.categoryBreakdown
           ?.slice(0, 3)
-          .map((c) => `${c.category} ($${c.amount.toFixed(2)})`)
+          .map((c) => `${c.category} (₹${c.amount.toFixed(2)})`)
           .join(", ") || "No categories with significant spending found."
       }`,
     };
@@ -164,9 +164,9 @@ Format: Provide clear, structured responses with actionable insights.`;
     }
 
     return `Based on your financial data:
-- Balance: $${context.balance?.toFixed(2)}
-- Income: $${context.totalIncome?.toFixed(2)}
-- Expenses: $${context.totalExpenses?.toFixed(2)}
+- Balance: ₹${context.balance?.toFixed(2)}
+- Income: ₹${context.totalIncome?.toFixed(2)}
+- Expenses: ₹${context.totalExpenses?.toFixed(2)}
 
 I recommend focusing on tracking your expenses and setting clear budget goals. Your top categories for spending are ${context.categoryBreakdown
       ?.slice(0, 3)
@@ -190,11 +190,9 @@ I recommend focusing on tracking your expenses and setting clear budget goals. Y
       );
 
       if (overBudget) {
-        insight = `Your ${
-          overBudget.category
-        } spending ($${overBudget.spent.toFixed(
+        insight = `Your ${overBudget.category} spending (₹${overBudget.spent.toFixed(
           2,
-        )}) has exceeded your budget of $${overBudget.budgetAmount.toFixed(
+        )}) has exceeded your budget of ₹${overBudget.budgetAmount.toFixed(
           2,
         )}.`;
 
@@ -208,9 +206,7 @@ I recommend focusing on tracking your expenses and setting clear budget goals. Y
       }
 
       if (nearBudget) {
-        insight = `Your ${
-          nearBudget.category
-        } spending is at ${nearBudget.utilization.toFixed(0)}% of your budget.`;
+        insight = `Your ${nearBudget.category} spending is at ${nearBudget.utilization.toFixed(0)}% of your budget.`;
 
         recommendation = `Monitor your ${nearBudget.category} spending closely this month to stay within budget.`;
 

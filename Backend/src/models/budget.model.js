@@ -151,20 +151,33 @@ class Budget {
     return result.rows;
   }
 
-  // Fix: Check if transactions exist (used by delete and update)
   static async hasTransactions(userId, category, month) {
     const exactCategory = getExactExpenseCategory(category);
     if (!exactCategory) return false;
 
-    const budgetMonth = this.normalizeMonth(month);
-    const nextMonthStart = this.getNextMonthStart(month);
+    // Fix: month ko YYYY-MM format mein convert karo
+    let monthStr = month;
+
+    // Agar month Date object hai
+    if (month instanceof Date) {
+      const year = month.getFullYear();
+      const monthNumber = String(month.getMonth() + 1).padStart(2, "0");
+      monthStr = `${year}-${monthNumber}`;
+    }
+    // Agar month YYYY-MM-DD format mein hai
+    else if (typeof month === "string" && month.length === 10) {
+      monthStr = month.substring(0, 7);
+    }
+
+    const budgetMonth = this.normalizeMonth(monthStr);
+    const nextMonthStart = this.getNextMonthStart(monthStr);
 
     const result = await pool.query(
       `SELECT EXISTS (
-        SELECT 1 FROM transactions
-        WHERE user_id = $1 AND category = $2 AND type = 'expense'
-          AND date >= $3 AND date < $4
-      )`,
+      SELECT 1 FROM transactions
+      WHERE user_id = $1 AND category = $2 AND type = 'expense'
+        AND date >= $3 AND date < $4
+    )`,
       [userId, exactCategory, budgetMonth, nextMonthStart],
     );
     return result.rows[0].exists;
