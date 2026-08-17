@@ -23,7 +23,11 @@ const analyticsService = {
     if (startDate) params.append("startDate", startDate);
     if (endDate) params.append("endDate", endDate);
     const response = await api.get(`/analytics/categories?${params}`);
-    return response.data.data;
+    // Transform total_amount to amount for SpendingOverview component
+    return response.data.data.map((item) => ({
+      ...item,
+      amount: item.total_amount,
+    }));
   },
 };
 

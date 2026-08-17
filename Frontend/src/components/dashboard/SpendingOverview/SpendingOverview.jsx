@@ -29,7 +29,27 @@ const SpendingOverview = ({ data, loading }) => {
     );
   }
 
-  const total = data.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+  // Filter out invalid data items
+  const validData = data.filter((item) => {
+    const amount = parseFloat(item.amount);
+    return !isNaN(amount) && amount > 0 && item.category;
+  });
+
+  if (validData.length === 0) {
+    return (
+      <div className={styles.container}>
+        <h3 className={styles.title}>Spending Overview</h3>
+        <div className={styles.empty}>
+          <p>No valid spending data available</p>
+        </div>
+      </div>
+    );
+  }
+
+  const total = validData.reduce(
+    (sum, item) => sum + parseFloat(item.amount),
+    0,
+  );
 
   const colors = [
     "#0ea5e9",
@@ -45,7 +65,7 @@ const SpendingOverview = ({ data, loading }) => {
       <h3 className={styles.title}>Spending Overview</h3>
 
       <div className={styles.bars}>
-        {data.slice(0, 6).map((item, index) => {
+        {validData.slice(0, 6).map((item, index) => {
           const amount = parseFloat(item.amount);
           const percentage = total > 0 ? (amount / total) * 100 : 0;
 
